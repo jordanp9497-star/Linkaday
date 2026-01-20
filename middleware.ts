@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
-import { env } from "@/lib/env"
+import { getServerEnv } from "@/lib/env"
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -8,6 +8,8 @@ export async function middleware(request: NextRequest) {
       headers: request.headers,
     },
   })
+
+  const env = getServerEnv()
 
   // Créer le client Supabase avec gestion des cookies pour middleware
   const supabase = createServerClient(
@@ -18,7 +20,7 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
           // Mettre à jour les cookies dans la requête
           cookiesToSet.forEach(({ name, value }) => {
             request.cookies.set(name, value)

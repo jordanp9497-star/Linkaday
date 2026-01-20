@@ -33,7 +33,11 @@ export default function ConnectTelegramClient({
     }
   }, [searchParams])
 
-  const telegramUrl = `https://t.me/${process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME}?start=1`
+  // Utiliser process.env directement côté client (les NEXT_PUBLIC_* sont disponibles)
+  const telegramBotUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME
+  const telegramUrl = telegramBotUsername
+    ? `https://t.me/${telegramBotUsername}?start=1`
+    : null
   const isConnected = telegramChatId !== null
 
   return (
@@ -74,7 +78,7 @@ export default function ConnectTelegramClient({
               <div>
                 <div className="font-semibold">Clique Start</div>
                 <div className="text-sm text-muted-foreground">
-                  Dans la conversation avec le bot, clique sur le bouton "Start"
+                  Dans la conversation avec le bot, clique sur le bouton &quot;Start&quot;
                 </div>
               </div>
             </div>
@@ -85,22 +89,33 @@ export default function ConnectTelegramClient({
               <div>
                 <div className="font-semibold">Tu recevras tes thèmes automatiquement chaque jour</div>
                 <div className="text-sm text-muted-foreground">
-                  Le bot t'enverra des thèmes de posts personnalisés selon tes préférences
+                  Le bot t&apos;enverra des thèmes de posts personnalisés selon tes préférences
                 </div>
               </div>
             </div>
           </div>
 
           <div className="pt-4">
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={() => window.open(telegramUrl, "_blank")}
-            >
-              <MessageSquare className="mr-2 h-5 w-5" />
-              Ouvrir Telegram
-              <ExternalLink className="ml-2 h-4 w-4" />
-            </Button>
+            {telegramUrl ? (
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={() => window.open(telegramUrl, "_blank")}
+              >
+                <MessageSquare className="mr-2 h-5 w-5" />
+                Ouvrir Telegram
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              <div className="p-4 rounded-lg border border-destructive bg-destructive/10 text-center">
+                <p className="text-sm text-destructive font-semibold">
+                  Config Telegram manquante
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  La variable NEXT_PUBLIC_TELEGRAM_BOT_USERNAME n&apos;est pas configurée
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

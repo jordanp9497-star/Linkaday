@@ -1,13 +1,15 @@
 import Stripe from "stripe"
-import { env } from "@/lib/env"
+import { requireStripeEnv } from "@/lib/env"
 
 /**
  * Client Stripe initialisé avec la clé secrète
  * ⚠️ À utiliser UNIQUEMENT côté serveur
+ * @throws Error si les variables Stripe ne sont pas configurées
  */
 export function getStripeClient(): Stripe {
+  const env = requireStripeEnv()
   return new Stripe(env.STRIPE_SECRET_KEY, {
-    apiVersion: "2024-11-20.acacia",
+    apiVersion: "2023-10-16",
     typescript: true,
   })
 }
@@ -17,12 +19,14 @@ export function getStripeClient(): Stripe {
  * @param payload - Corps de la requête (string ou Buffer)
  * @param signature - Signature du header Stripe
  * @returns L'événement Stripe si la signature est valide, null sinon
+ * @throws Error si les variables Stripe ne sont pas configurées
  */
 export async function verifyWebhookSignature(
   payload: string | Buffer,
   signature: string
 ): Promise<Stripe.Event | null> {
   try {
+    const env = requireStripeEnv()
     const stripe = getStripeClient()
     const event = stripe.webhooks.constructEvent(
       payload,

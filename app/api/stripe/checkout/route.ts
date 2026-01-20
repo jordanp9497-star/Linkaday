@@ -1,8 +1,7 @@
 import { requireAuthServer } from "@/lib/auth"
 import { getProfileServer } from "@/lib/auth"
 import { NextResponse } from "next/server"
-import { getStripeClient } from "@/lib/stripe"
-import { env } from "@/lib/env"
+import { requireStripeEnv } from "@/lib/env"
 import Stripe from "stripe"
 
 /**
@@ -39,8 +38,22 @@ export async function POST(request: Request) {
       console.log(`[API] Creating Stripe checkout for user: ${user.id}`)
     }
 
-    // Initialiser Stripe
-    const stripe = getStripeClient()
+    // Vérifier que les variables Stripe sont configurées et récupérer les valeurs
+    let stripeEnv
+    try {
+      stripeEnv = requireStripeEnv()
+    } catch (error) {
+      return NextResponse.json(
+        { ok: false, error: error instanceof Error ? error.message : "Stripe env missing" },
+        { status: 500 }
+      )
+    }
+
+    // Initialiser Stripe (on réutilise stripeEnv pour éviter la double vérification)
+    const stripe = new Stripe(stripeEnv.STRIPE_SECRET_KEY, {
+      apiVersion: "2023-10-16",
+      typescript: true,
+    })
 
     // Créer la session Checkout
     const session = await stripe.checkout.sessions.create({
@@ -48,14 +61,14 @@ export async function POST(request: Request) {
       payment_method_types: ["card"],
       line_items: [
         {
-          price: env.STRIPE_PRICE_ID,
+          price: stripeEnv.STRIPE_PRICE_ID,
           quantity: 1,
         },
       ],
       customer_email: user.email,
       client_reference_id: user.id,
-      success_url: `${env.NEXT_PUBLIC_APP_URL}/connect-telegram?success=1`,
-      cancel_url: `${env.NEXT_PUBLIC_APP_URL}/billing?canceled=1`,
+      success_url: `${stripeEnv.NEXT_PUBLIC_APP_URL}/connect-telegram?success=1`,
+      cancel_url: `${stripeEnv.NEXT_PUBLIC_APP_URL}/billing?canceled=1`,
       metadata: {
         user_id: user.id,
         email: user.email || "",

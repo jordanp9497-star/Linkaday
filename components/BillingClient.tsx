@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
@@ -137,7 +138,7 @@ export default function BillingClient({ isSubscribed }: BillingClientProps) {
             <div>
               <div className="font-semibold">Planification</div>
               <div className="text-sm text-muted-foreground">
-                Programme tes publications à l'avance
+                Programme tes publications à l&apos;avance
               </div>
             </div>
           </div>
@@ -152,7 +153,7 @@ export default function BillingClient({ isSubscribed }: BillingClientProps) {
             loading={loading}
             loadingText="Redirection..."
           >
-            S'abonner
+            S&apos;abonner
             <ArrowRight className="ml-2 h-4 w-4" />
           </LoadingButton>
         </div>

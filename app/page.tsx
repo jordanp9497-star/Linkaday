@@ -37,7 +37,7 @@ export default function Home() {
                 <CheckCircle2 className="h-10 w-10 text-primary" />
                 <h3 className="font-semibold text-lg">Contenu personnalisé</h3>
                 <p className="text-sm text-muted-foreground">
-                  Des posts adaptés à ton style et à ton secteur d'activité.
+                  Des posts adaptés à ton style et à ton secteur d&apos;activité.
                 </p>
               </div>
             </CardContent>
@@ -49,7 +49,7 @@ export default function Home() {
                 <CheckCircle2 className="h-10 w-10 text-primary" />
                 <h3 className="font-semibold text-lg">Régénération facile</h3>
                 <p className="text-sm text-muted-foreground">
-                  Pas satisfait ? Régénère en un clic jusqu'à obtenir le post parfait.
+                  Pas satisfait ? Régénère en un clic jusqu&apos;à obtenir le post parfait.
                 </p>
               </div>
             </CardContent>

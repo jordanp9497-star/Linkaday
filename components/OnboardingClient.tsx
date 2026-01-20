@@ -168,7 +168,7 @@ export default function OnboardingClient() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="secteur">Secteur d'activité *</Label>
+              <Label htmlFor="secteur">Secteur d&apos;activité *</Label>
               <Input
                 id="secteur"
                 placeholder="Ex: Tech, Finance, Marketing..."

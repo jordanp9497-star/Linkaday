@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getStripeClient, verifyWebhookSignature, getUserIdFromCheckoutSession } from "@/lib/stripe"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { requireStripeEnv } from "@/lib/env"
 import Stripe from "stripe"
 
 /**
@@ -14,6 +15,19 @@ import Stripe from "stripe"
  */
 export async function POST(request: NextRequest) {
   try {
+    // Vérifier que les variables Stripe sont configurées
+    try {
+      requireStripeEnv()
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("[Webhook] Stripe env missing:", error)
+      }
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : "Stripe env missing" },
+        { status: 500 }
+      )
+    }
+
     // Récupérer le body et la signature
     const body = await request.text()
     const signature = request.headers.get("stripe-signature")

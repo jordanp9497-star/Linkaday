@@ -108,8 +108,8 @@ export default function DashboardClient({
       {/* Résumé de l'état */}
       <Card>
         <CardHeader>
-          <CardTitle>Résumé de l'état</CardTitle>
-          <CardDescription>Vue d'ensemble de ta configuration</CardDescription>
+          <CardTitle>Résumé de l&apos;état</CardTitle>
+          <CardDescription>Vue d&apos;ensemble de ta configuration</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
