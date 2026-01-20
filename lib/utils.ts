@@ -17,3 +17,18 @@ export function safeJsonParse<T = unknown>(json: string): T | null {
     return null
   }
 }
+
+/**
+ * Récupère l'URL du site (origin) de manière sécurisée
+ * Utilise NEXT_PUBLIC_APP_URL en production, window.location.origin en dev
+ * @returns URL absolue du site (ex: https://example.com)
+ */
+export function getSiteUrl(): string {
+  // En production, utiliser NEXT_PUBLIC_APP_URL si défini
+  if (typeof window === "undefined") {
+    // Côté serveur
+    return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  }
+  // Côté client
+  return window.location.origin
+}

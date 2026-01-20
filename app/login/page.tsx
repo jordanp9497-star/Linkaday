@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Mail } from "lucide-react"
+import { getSiteUrl } from "@/lib/utils"
 
 function LoginForm() {
   const [email, setEmail] = useState("")
@@ -25,7 +26,7 @@ function LoginForm() {
         data: { user },
       } = await client.auth.getUser()
       if (user) {
-        const next = searchParams.get("next") ?? "/"
+        const next = searchParams.get("next") ?? "/profile"
         router.push(next)
       }
     }
@@ -38,8 +39,9 @@ function LoginForm() {
     setLoading(true)
 
     try {
-      const next = searchParams.get("next") ?? "/"
-      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
+      const next = searchParams.get("next") ?? "/profile"
+      const origin = getSiteUrl()
+      const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(next)}`
       
       const { error } = await supabase.auth.signInWithOtp({
         email,
@@ -72,6 +74,11 @@ function LoginForm() {
           <CardDescription>
             Entrez votre email pour recevoir un lien de connexion
           </CardDescription>
+          {searchParams.get("error") && (
+            <div className="mt-2 p-2 bg-destructive/10 text-destructive text-sm rounded">
+              Erreur d&apos;authentification. Veuillez réessayer.
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleMagicLink} className="space-y-4">
