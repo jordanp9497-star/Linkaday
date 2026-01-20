@@ -7,8 +7,8 @@ import AppHeader from "@/components/AppHeader"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "AgentLinkdin - Génère tes posts LinkedIn automatiquement",
-  description: "Génère automatiquement tes posts LinkedIn personnalisés, sans plus te soucier !",
+  title: "Linkaday - Automatiser vos publications LinkedIn",
+  description: "Automatisez vos publications LinkedIn avec des posts personnalisés générés automatiquement.",
 }
 
 export default function RootLayout({
