@@ -3,6 +3,15 @@ import { NextResponse, type NextRequest } from "next/server"
 import { getServerEnv } from "@/lib/env"
 
 export async function middleware(request: NextRequest) {
+  // Whitelist des routes publiques qui ne nécessitent pas d'authentification
+  const publicRoutes = ["/login", "/auth/callback"]
+  const isPublicRoute = publicRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
+
+  // Si route publique, laisser passer sans vérification d'auth
+  if (isPublicRoute) {
+    return NextResponse.next()
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -72,9 +81,10 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - api routes (webhooks, etc.)
+     * - auth routes (login, callback) - déjà gérées dans le code
      * - public folder
      * - file extensions (images, etc.)
      */
-    "/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api|auth|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 }

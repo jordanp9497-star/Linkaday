@@ -32,3 +32,11 @@ export function getSiteUrl(): string {
   // Côté client
   return window.location.origin
 }
+
+/**
+ * Alias pour getSiteUrl() - récupère l'origin de manière sécurisée
+ * @returns URL absolue du site (ex: https://example.com)
+ */
+export function getOrigin(): string {
+  return getSiteUrl()
+}
