@@ -24,6 +24,9 @@ export default function Home() {
             <Link href="/onboarding">Commencer</Link>
           </Button>
           <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
+            <Link href="/linkaday">Découvrir Linkaday</Link>
+          </Button>
+          <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
             <Link href="/dashboard">Voir le dashboard</Link>
           </Button>
         </div>

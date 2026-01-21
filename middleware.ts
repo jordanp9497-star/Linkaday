@@ -56,9 +56,15 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Routes protégées
+  // Routes protégées nécessitant une authentification
   const protectedRoutes = ["/onboarding", "/billing", "/connect-telegram", "/dashboard", "/profile"]
   const isProtectedRoute = protectedRoutes.some((route) =>
+    request.nextUrl.pathname.startsWith(route)
+  )
+
+  // Routes nécessitant un abonnement actif (is_active === true)
+  const subscriptionRequiredRoutes = ["/profile", "/onboarding", "/dashboard"]
+  const isSubscriptionRequiredRoute = subscriptionRequiredRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
   )
 
@@ -67,6 +73,32 @@ export async function middleware(request: NextRequest) {
     const redirectUrl = new URL("/login", request.url)
     redirectUrl.searchParams.set("next", request.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)
+  }
+
+  // Si route nécessite un abonnement actif et utilisateur connecté
+  if (isSubscriptionRequiredRoute && user) {
+    // Récupérer le profil pour vérifier is_active
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("is_active")
+      .eq("id", user.id)
+      .single()
+
+    // Si erreur ou profil non trouvé, considérer comme non abonné
+    if (profileError || !profile) {
+      if (process.env.NODE_ENV === "development") {
+        console.log(`[Middleware] Profile not found or error for user ${user.id}, redirecting to /linkaday`)
+      }
+      return NextResponse.redirect(new URL("/linkaday", request.url))
+    }
+
+    // Si is_active n'est pas true, rediriger vers /linkaday
+    if (profile.is_active !== true) {
+      if (process.env.NODE_ENV === "development") {
+        console.log(`[Middleware] User ${user.id} is not active (is_active=${profile.is_active}), redirecting to /linkaday`)
+      }
+      return NextResponse.redirect(new URL("/linkaday", request.url))
+    }
   }
 
   // Retourner la réponse avec les cookies mis à jour

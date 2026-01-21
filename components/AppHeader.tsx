@@ -14,6 +14,9 @@ export default function AppHeader() {
           <Button variant="ghost" asChild>
             <Link href="/">Accueil</Link>
           </Button>
+          <Button variant="ghost" asChild>
+            <Link href="/linkaday">Linkaday</Link>
+          </Button>
           <Button asChild>
             <Link href="/onboarding">Commencer</Link>
           </Button>

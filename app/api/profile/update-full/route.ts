@@ -4,10 +4,10 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 
 /**
- * Schéma de validation Zod pour le body de la requête
+ * Schéma de validation Zod pour le body de la requête complète
  */
-const updateProfileSchema = z.object({
-  contact_email: z.string().email("Format email invalide"),
+const updateFullProfileSchema = z.object({
+  contact_email: z.string().email().optional(),
   job_title: z.string().optional(),
   industry: z.string().optional(),
   seniority: z.string().optional(),
@@ -21,33 +21,30 @@ const updateProfileSchema = z.object({
   onboarding_completed: z.boolean().optional(),
 })
 
-type UpdateProfileBody = z.infer<typeof updateProfileSchema>
+type UpdateFullProfileBody = z.infer<typeof updateFullProfileSchema>
 
 /**
- * Route API sécurisée pour mettre à jour le profil utilisateur (POST)
+ * Route API pour mettre à jour TOUS les champs du profil utilisateur (POST)
  * 
- * Accepte tous les champs du profil:
- * - contact_email (obligatoire, format email)
- * - job_title, industry, seniority, tone (optionnels)
- * - focus, stack_context, audience_target (arrays optionnels)
- * - directive_json, personal_json, onboarding_json (objets optionnels)
- * - onboarding_completed (boolean optionnel)
- * 
- * Met à jour updated_at automatiquement via le trigger DB.
+ * Colonnes modifiables:
+ * - contact_email
+ * - job_title, industry, seniority, tone (si colonnes existent)
+ * - focus, stack_context, audience_target (arrays)
+ * - directive_json, personal_json, onboarding_json
+ * - onboarding_completed
  */
 export async function POST(request: Request) {
   try {
     // Authentification obligatoire
     const user = await requireAuthServer()
-    
+
     if (process.env.NODE_ENV === "development") {
-      console.log(`[API] Profile update request from user: ${user.id}`)
+      console.log(`[API] Full profile update request from user: ${user.id}`)
     }
 
     // Parse et validation du body
-    let body: UpdateProfileBody
+    let body: UpdateFullProfileBody
     try {
-      // Vérifier que le body n'est pas vide
       const contentType = request.headers.get("content-type")
       if (!contentType || !contentType.includes("application/json")) {
         return NextResponse.json(
@@ -65,7 +62,7 @@ export async function POST(request: Request) {
       }
 
       const rawBody = JSON.parse(text)
-      body = updateProfileSchema.parse(rawBody)
+      body = updateFullProfileSchema.parse(rawBody)
     } catch (error) {
       if (error instanceof SyntaxError) {
         return NextResponse.json(
@@ -91,28 +88,33 @@ export async function POST(request: Request) {
     // Préparer les updates
     const updates: Record<string, unknown> = {}
 
-    // contact_email est obligatoire
-    updates.contact_email = body.contact_email
-
-    // Champs directs optionnels
+    // Champs directs (si colonnes existent)
+    if (body.contact_email !== undefined) updates.contact_email = body.contact_email
     if (body.job_title !== undefined) updates.job_title = body.job_title
     if (body.industry !== undefined) updates.industry = body.industry
     if (body.seniority !== undefined) updates.seniority = body.seniority
     if (body.tone !== undefined) updates.tone = body.tone
 
-    // Arrays optionnels
+    // Arrays
     if (body.focus !== undefined) updates.focus = body.focus
     if (body.stack_context !== undefined) updates.stack_context = body.stack_context
     if (body.audience_target !== undefined) updates.audience_target = body.audience_target
 
-    // JSON fields optionnels
+    // JSON fields
     if (body.directive_json !== undefined) updates.directive_json = body.directive_json
     if (body.personal_json !== undefined) updates.personal_json = body.personal_json
     if (body.onboarding_json !== undefined) updates.onboarding_json = body.onboarding_json
     if (body.onboarding_completed !== undefined) updates.onboarding_completed = body.onboarding_completed
 
+    // Vérifier qu'au moins un champ est présent
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json(
+        { ok: false, error: "Au moins un champ doit être fourni" },
+        { status: 400 }
+      )
+    }
+
     // Mise à jour dans Supabase
-    // Note: updated_at est mis à jour automatiquement par le trigger handle_updated_at
     const supabase = await createClient()
     const { data, error } = await supabase
       .from("profiles")
@@ -132,12 +134,11 @@ export async function POST(request: Request) {
     }
 
     if (process.env.NODE_ENV === "development") {
-      console.log(`[API] Profile updated successfully for user: ${user.id}`)
+      console.log(`[API] Full profile updated successfully for user: ${user.id}`)
     }
 
     return NextResponse.json({ ok: true })
   } catch (error) {
-    // Gestion des erreurs d'authentification
     if (error instanceof Error && error.message.includes("redirect")) {
       return NextResponse.json(
         { ok: false, error: "Non authentifié" },
@@ -150,7 +151,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { ok: false, error: "Erreur serveur lors de la mise à jour du profil" },
+      { ok: false, error: "Erreur serveur" },
       { status: 500 }
     )
   }

@@ -2,17 +2,14 @@
 
 import { useState, useEffect, Suspense } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Mail } from "lucide-react"
+import { Chrome } from "lucide-react"
 import { getSiteUrl } from "@/lib/utils"
 
 function LoginForm() {
-  const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -26,27 +23,24 @@ function LoginForm() {
         data: { user },
       } = await client.auth.getUser()
       if (user) {
-        const next = searchParams.get("next") ?? "/profile"
-        router.push(next)
+        router.push("/dashboard")
       }
     }
     checkUser()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleGoogleLogin = async () => {
     setLoading(true)
 
     try {
-      const next = searchParams.get("next") ?? "/profile"
       const origin = getSiteUrl()
-      const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(next)}`
-      
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
+      const redirectTo = `${origin}/auth/callback`
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
         options: {
-          emailRedirectTo: redirectTo,
+          redirectTo,
         },
       })
 
@@ -54,14 +48,11 @@ function LoginForm() {
         toast.error("Erreur", {
           description: error.message,
         })
-      } else {
-        toast.success("Email envoyé !", {
-          description: "Vérifiez votre boîte mail pour vous connecter.",
-        })
+        setLoading(false)
       }
+      // Si succès, l'utilisateur sera redirigé vers Google, puis vers /auth/callback
     } catch (error) {
       toast.error("Une erreur est survenue")
-    } finally {
       setLoading(false)
     }
   }
@@ -72,7 +63,7 @@ function LoginForm() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Connexion</CardTitle>
           <CardDescription>
-            Entrez votre email pour recevoir un lien de connexion
+            Connectez-vous avec votre compte Google pour continuer
           </CardDescription>
           {searchParams.get("error") && (
             <div className="mt-2 p-2 bg-destructive/10 text-destructive text-sm rounded">
@@ -81,30 +72,22 @@ function LoginForm() {
           )}
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleMagicLink} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="vous@exemple.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
-                "Envoi en cours..."
-              ) : (
-                <>
-                  <Mail className="mr-2 h-4 w-4" />
-                  Recevoir le lien de connexion
-                </>
-              )}
-            </Button>
-          </form>
+          <Button
+            type="button"
+            className="w-full"
+            disabled={loading}
+            onClick={handleGoogleLogin}
+            size="lg"
+          >
+            {loading ? (
+              "Redirection..."
+            ) : (
+              <>
+                <Chrome className="mr-2 h-5 w-5" />
+                Continuer avec Google
+              </>
+            )}
+          </Button>
         </CardContent>
       </Card>
     </div>

@@ -68,7 +68,7 @@ export async function POST(request: Request) {
       customer_email: user.email,
       client_reference_id: user.id,
       success_url: `${stripeEnv.NEXT_PUBLIC_APP_URL}/connect-telegram?success=1`,
-      cancel_url: `${stripeEnv.NEXT_PUBLIC_APP_URL}/billing?canceled=1`,
+      cancel_url: `${stripeEnv.NEXT_PUBLIC_APP_URL}/linkaday?canceled=1`,
       metadata: {
         user_id: user.id,
         email: user.email || "",
